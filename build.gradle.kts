@@ -10,6 +10,7 @@ plugins {
     id("groovy")
     id("jacoco")
     id("org.jetbrains.dokka") version "0.9.17"
+    id("org.datlowe.maven-publish-auth") version "2.0.2"
 
     kotlin("plugin.jpa") version "1.3.0"
     kotlin("jvm") version "1.3.0"
@@ -59,9 +60,11 @@ publishing {
     repositories {
         maven {
             if(project.version.toString().contains("-SNAPSHOT")) {
-                url = uri("http://repository.dev.ebf.de/nexus/content/repositories/snapshots/")
+                name = "ebf-snapshots"
+                url = uri("http://repository.dev.ebf.de/nexus/repository/snapshots/")
             } else {
-                url = uri("http://repository.dev.ebf.de/nexus/content/repositories/releases/")
+                name = "ebf-releases"
+                url = uri("http://repository.dev.ebf.de/nexus/repository/releases/")
             }
         }
     }
