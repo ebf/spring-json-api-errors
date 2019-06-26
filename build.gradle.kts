@@ -61,7 +61,7 @@ publishing {
         maven {
             if(project.version.toString().contains("-SNAPSHOT")) {
                 name = "ebf-snapshots"
-                url = uri("http://repository.dev.ebf.de/nexus/content/repositories/releases/")
+                url = uri("http://repository.dev.ebf.de/nexus/content/repositories/snapshots/")
             } else {
                 name = "ebf-releases"
                 url = uri("http://repository.dev.ebf.de/nexus/content/repositories/releases/")
