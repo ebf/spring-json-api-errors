@@ -1,11 +1,15 @@
+import org.gradle.jvm.tasks.Jar
+import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val springVersion = "2.1.4.RELEASE"
 
 plugins {
+    id("java-library")
+    id("maven-publish")
     id("groovy")
     id("jacoco")
-    id("java-library")
+    id("org.jetbrains.dokka") version "0.9.17"
 
     kotlin("plugin.jpa") version "1.3.0"
     kotlin("jvm") version "1.3.0"
@@ -37,9 +41,33 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-configuration-processor:$springVersion")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+val dokkaJar by tasks.creating(Jar::class) {
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    description = "Documentation for Spring JSON API Errors library"
+    classifier = "javadoc"
+    from(tasks.getByName("dokka"))
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("default") {
+            from(components["java"])
+            artifact(dokkaJar)
+        }
     }
+
+    repositories {
+        maven {
+            if(project.version.toString().contains("-SNAPSHOT")) {
+                url = uri("http://repository.dev.ebf.de/nexus/content/repositories/snapshots/")
+            } else {
+                url = uri("http://repository.dev.ebf.de/nexus/content/repositories/releases/")
+            }
+        }
+    }
+}
+
+tasks.withType<DokkaTask> {
+    outputFormat = "javadoc"
+    outputDirectory = "$buildDir/javadoc"
 }
