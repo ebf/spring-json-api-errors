@@ -66,6 +66,12 @@ publishing {
                 name = "ebf-releases-deployment"
                 url = uri("http://repository.dev.ebf.de/nexus/content/repositories/releases/")
             }
+            if (project.hasProperty('nexus_user') && project.hasProperty('nexus_pass')) {
+              credentials {
+                username = $nexus_user
+                password = $nexus_pass
+              }
+            }
         }
     }
 }
