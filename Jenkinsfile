@@ -3,7 +3,7 @@ pipeline {
     label 'slave'
   }
   stages {
-    stage('Generate License Report') {
+    stage('Build and Publish artifact') {
       agent {
         docker {
           image 'openjdk:8'
