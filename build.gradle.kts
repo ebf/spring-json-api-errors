@@ -68,8 +68,8 @@ publishing {
             }
             if (project.hasProperty("nexus_user") && project.hasProperty("nexus_pass")) {
               credentials {
-                username = "$nexus_user"
-                password = "$nexus_pass"
+                username = project.property("$nexus_user")
+                password = project.property("$nexus_pass")
               }
             }
         }
