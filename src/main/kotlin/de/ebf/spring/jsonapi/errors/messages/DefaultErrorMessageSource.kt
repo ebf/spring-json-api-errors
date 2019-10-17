@@ -24,11 +24,10 @@ class DefaultErrorMessageSource constructor(
         return order
     }
 
-    override fun get(resolvable: ErrorMessageResolvable): JsonApiErrors.ErrorMessage {
+    override fun get(resolvable: Resolvable): JsonApiErrors.ErrorMessage {
         var title: String? = null
 
-        var arguments = arrayOf<Any>()
-        resolvable.arguments?.forEach { arguments = arguments.plus(it) }
+        val arguments = resolvable.arguments.filterNotNull().toTypedArray()
 
         try {
             title = messageSourceAccessor.getMessage(DefaultMessageSourceResolvable(

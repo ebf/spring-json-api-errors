@@ -9,14 +9,14 @@ import org.springframework.util.ObjectUtils
  * @see ErrorMessageSource
  */
 data class ErrorMessageResolvable (
-    var code: String,
-    var arguments: Array<Any>? = null,
-    var source: Map<String, Any>? = null,
-    var defaultMessage: String? = null
-) {
+    override val code: String,
+    override val arguments: Array<Any> = arrayOf(),
+    override val source: Map<String, Any> = emptyMap(),
+    override val defaultMessage: String? = null
+): Resolvable {
 
-    constructor(code: String): this(code, null, null, null)
-    constructor(code: String, arguments: Array<Any>): this(code, arguments, null, null)
+    constructor(code: String): this(code, arrayOf(), emptyMap(), null)
+    constructor(code: String, arguments: Array<Any>): this(code, arguments, emptyMap(), null)
     constructor(code: String, arguments: Array<Any>, source: Map<String, Any>): this(code, arguments, source, null)
 
     override fun equals(other: Any?): Boolean {

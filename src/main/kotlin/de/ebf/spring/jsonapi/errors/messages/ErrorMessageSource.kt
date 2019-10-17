@@ -5,7 +5,7 @@ import org.springframework.context.NoSuchMessageException
 import org.springframework.core.Ordered
 
 /**
- * Interface used to find a translation for an exception code represented by [ErrorMessageResolvable] class
+ * Interface used to find a translation for an exception code represented by [Resolvable] interface
  *
  * @see ErrorMessageResolvable
  */
@@ -19,6 +19,6 @@ interface ErrorMessageSource: Ordered {
      * @return Error message for the caught exception or a default error message
      * @throws NoSuchMessageException when error message is not found for the given arguments
      */
-    fun get(resolvable: ErrorMessageResolvable): JsonApiErrors.ErrorMessage
+    fun get(resolvable: Resolvable): JsonApiErrors.ErrorMessage
 
 }

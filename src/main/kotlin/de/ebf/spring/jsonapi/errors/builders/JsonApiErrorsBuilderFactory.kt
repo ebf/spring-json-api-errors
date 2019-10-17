@@ -1,9 +1,12 @@
 package de.ebf.spring.jsonapi.errors.builders
 
 import de.ebf.spring.jsonapi.errors.logging.ErrorLogger
+import de.ebf.spring.jsonapi.errors.messages.DefaultErrorMessageSource
 import de.ebf.spring.jsonapi.errors.messages.ErrorMessageSourceComposite
 import de.ebf.spring.jsonapi.errors.messages.ErrorMessageSource
 import de.ebf.spring.jsonapi.errors.resolvers.ExceptionResolver
+import org.springframework.context.MessageSource
+import org.springframework.context.support.ResourceBundleMessageSource
 import org.springframework.core.OrderComparator
 import org.springframework.util.Assert
 
@@ -32,6 +35,22 @@ class JsonApiErrorsBuilderFactory {
     fun withErrorMessageSource(errorMessageSource: ErrorMessageSource) = apply {
         Assert.notNull(errorMessageSource, "Error message source can not be null")
         this.errorMessageSources.add(errorMessageSource)
+    }
+
+    fun witMessageSource(messageSource: MessageSource) = apply {
+        Assert.notNull(messageSource, "Message source can not be null")
+        this.errorMessageSources.add(DefaultErrorMessageSource(messageSource))
+    }
+
+    fun withMessageBundles(vararg bundles: String) = apply {
+        Assert.notEmpty(bundles, "Message bundle locations can not be empty")
+        Assert.noNullElements(bundles, "Message bundle locations can not contain null elements")
+
+        val source = ResourceBundleMessageSource()
+        source.addBasenames(*bundles)
+        source.setUseCodeAsDefaultMessage(false)
+        source.setAlwaysUseMessageFormat(true)
+        witMessageSource(source)
     }
 
     fun withExceptionResolver(exceptionResolver: ExceptionResolver) = apply {

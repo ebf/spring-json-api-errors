@@ -1,27 +1,30 @@
 package de.ebf.spring.jsonapi.errors.resolvers
 
+import de.ebf.spring.jsonapi.errors.exceptions.JsonApiResolvableException
+import org.jetbrains.annotations.NotNull
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ResponseStatus
 import spock.lang.Specification
 
-import java.lang.reflect.Array
+/**
+ * @author <ahref="mailto:vladimir.spasic@ebf.com" > Vladimir Spasic</a>
+ * @since 17.10.19, Thu
+ * */
+class ResolvableExceptionResolverTest extends Specification {
 
-class ResponseStatusExceptionResolverTest extends Specification {
+    def resolver = new ResolvableExceptionResolver()
 
-    @ResponseStatus(reason = "error-code", code = HttpStatus.BAD_REQUEST)
-    class MappedException extends RuntimeException {}
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    class MappedException extends JsonApiResolvableException {
 
-    @ResponseStatus(reason = "error-code")
-    class MappedExceptionWithDefaultStatus extends RuntimeException {}
+        MappedException(@NotNull String code, @NotNull String message) {
+            super(code, message)
+        }
+    }
 
     def "should resolve exception with defined status code"() {
-        given:
-        def resolver = new ResponseStatusExceptionResolver()
-
-        ResolvedException resolved = null
-
         when:
-        resolved = resolver.resolve(new MappedException())
+        def resolved = resolver.resolve(new MappedException("error-code", "Default message"))
 
         then:
         verifyAll {
@@ -32,18 +35,14 @@ class ResponseStatusExceptionResolverTest extends Specification {
             resolved.errors[0].code == "error-code"
             resolved.errors[0].source == [:]
             resolved.errors[0].arguments == new Object[0]
+            resolved.errors[0].defaultMessage == "Default message"
         }
 
     }
 
-    def "should resolve exception with default status code"() {
-        given:
-        def resolver = new ResponseStatusExceptionResolver()
-
-        ResolvedException resolved = null
-
+    def "should resolve exception with default 500 status code"() {
         when:
-        resolved = resolver.resolve(new MappedExceptionWithDefaultStatus())
+        def resolved = resolver.resolve(new JsonApiResolvableException("error-code", "Default message"))
 
         then:
         verifyAll {
@@ -54,6 +53,7 @@ class ResponseStatusExceptionResolverTest extends Specification {
             resolved.errors[0].code == "error-code"
             resolved.errors[0].source == [:]
             resolved.errors[0].arguments == new Object[0]
+            resolved.errors[0].defaultMessage == "Default message"
         }
 
     }

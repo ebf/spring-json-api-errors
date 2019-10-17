@@ -16,6 +16,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.multipart.support.MissingServletRequestPartException
 import org.springframework.web.servlet.NoHandlerFoundException
+import java.util.*
 
 /**
  * Implementation of an [ExceptionResolver] that is responsible for handling
@@ -192,7 +193,7 @@ class WebServletExceptionResolver: ExceptionResolver {
     private fun handleMethodArgumentTypeMismatchException(ex: MethodArgumentTypeMismatchException): ResolvedException {
         val errors = listOf(
             ErrorMessageResolvable("exception.invalid_parameter", arrayOf(
-                ex.name, ex.requiredType.toString()
+                ex.name, Objects.toString(ex.requiredType)
             ), mapOf(
                 Pair("parameter", ex.name)
             ))

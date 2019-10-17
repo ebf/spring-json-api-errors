@@ -4,6 +4,7 @@ import de.ebf.spring.jsonapi.errors.messages.ErrorMessageResolvable
 import org.springframework.core.Ordered
 import org.springframework.http.HttpStatus
 import org.springframework.validation.BindException
+import org.springframework.validation.BindingResult
 import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 
@@ -23,8 +24,8 @@ class ValidationExceptionResolver: ExceptionResolver {
             return handleMethodArgumentNotValidException(throwable)
         }
 
-        if (throwable is BindException) {
-            return handleBindException(throwable)
+        if (throwable is BindingResult) {
+            return handleBindingResult(throwable)
         }
 
         return null
@@ -32,10 +33,10 @@ class ValidationExceptionResolver: ExceptionResolver {
 
     /**
      * Handle the case where an argument annotated with `@Valid` such as
-     * an [RequestBody] or [RequestPart] argument fails validation.
+     * an [org.springframework.web.bind.annotation.RequestBody] or
+     * [org.springframework.web.bind.annotation.RequestPart] argument fails validation.
      *
-     * It sends an HTTP 415 error, sets the "Accept" header and returns an exception response
-     * object with validation error messages.
+     * It sends an HTTP 422 error and returns an exception response with validation error messages.
      *
      * @param ex the MethodArgumentNotValidException to be handled
      * @return an exception response with a list of validation errors
@@ -46,18 +47,17 @@ class ValidationExceptionResolver: ExceptionResolver {
     }
 
     /**
-     * Handle the case where an [@ModelAttribute][ModelAttribute] method
-     * argument has binding or validation errors and is not followed by another
+     * Handle the case where an [@ModelAttribute][org.springframework.web.bind.annotation.ModelAttribute]
+     * method argument has binding or validation errors and is not followed by another
      * method argument of type [BindingResult].
      *
-     * It sends an HTTP 415 error, sets the "Accept" header and returns an exception response
-     * object with validation error messages.
+     * It sends an HTTP 422 error and returns an exception response with validation error messages.
      *
      * @param ex the MethodArgumentNotValidException to be handled
      * @return an exception response with a list of validation errors
      */
-    private fun handleBindException(ex: BindException): ResolvedException {
-        val errors = ex.bindingResult.fieldErrors.map { error -> toErrorMessageResolvable(error) }
+    private fun handleBindingResult(ex: BindingResult): ResolvedException {
+        val errors = ex.fieldErrors.map { error -> toErrorMessageResolvable(error) }
         return ResolvedException(status = HttpStatus.UNPROCESSABLE_ENTITY, errors = errors)
     }
 
@@ -73,8 +73,8 @@ class ValidationExceptionResolver: ExceptionResolver {
 
         return ErrorMessageResolvable(
             code = code!!,
-            arguments = error.arguments,
             defaultMessage = defaultMessage,
+            arguments = error.arguments ?: emptyArray(),
             source = mapOf(Pair("pointer", error.field.replace(".", "/")))
         )
     }

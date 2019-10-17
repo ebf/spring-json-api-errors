@@ -11,10 +11,11 @@ import org.springframework.web.HttpMediaTypeNotAcceptableException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-class ServletHttpErrorsWriter constructor(
+class ServletJsonApiErrorsWriter constructor(
     private val converters: HttpMessageConverters
-): HttpErrorsWriter {
+): JsonApiErrorsWriter {
 
+    @Suppress("UNCHECKED_CAST")
     override fun write(
         request: HttpServletRequest,
         response: HttpServletResponse,

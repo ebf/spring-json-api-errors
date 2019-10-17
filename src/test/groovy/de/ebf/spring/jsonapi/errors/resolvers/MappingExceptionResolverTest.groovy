@@ -26,8 +26,8 @@ class MappingExceptionResolverTest extends Specification {
             resolved.status == HttpStatus.BAD_REQUEST
             resolved.errors.size() == 1
             resolved.errors[0].code == "illegal"
-            resolved.errors[0].source == null
-            resolved.errors[0].arguments == null
+            resolved.errors[0].source == [:]
+            resolved.errors[0].arguments == new Object[0]
         }
 
     }

@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-interface HttpErrorsWriter {
+interface JsonApiErrorsWriter {
 
     fun write(request: HttpServletRequest, response: HttpServletResponse, responseEntity: ResponseEntity<JsonApiErrors>)
 

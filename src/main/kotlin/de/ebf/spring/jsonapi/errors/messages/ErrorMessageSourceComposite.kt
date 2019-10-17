@@ -16,7 +16,7 @@ class ErrorMessageSourceComposite: ErrorMessageSource {
         return Ordered.HIGHEST_PRECEDENCE
     }
 
-    override fun get(resolvable: ErrorMessageResolvable): JsonApiErrors.ErrorMessage {
+    override fun get(resolvable: Resolvable): JsonApiErrors.ErrorMessage {
         var message: JsonApiErrors.ErrorMessage? = null
         var thrown: NoSuchMessageException? = null
         val iterator = sources.iterator()

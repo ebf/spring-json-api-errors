@@ -7,7 +7,7 @@ import de.ebf.spring.jsonapi.errors.config.EnableJsonApiErrors
 import de.ebf.spring.jsonapi.errors.config.JsonApiErrorConfigurer
 import de.ebf.spring.jsonapi.errors.mappings.ErrorMappingRegistry
 import de.ebf.spring.jsonapi.errors.messages.DefaultErrorMessageSource
-import de.ebf.spring.jsonapi.errors.writer.HttpErrorsWriter
+import de.ebf.spring.jsonapi.errors.writer.JsonApiErrorsWriter
 import groovy.json.JsonOutput
 import org.jetbrains.annotations.NotNull
 import org.springframework.beans.factory.annotation.Autowired
@@ -82,7 +82,7 @@ class IntegrationTest extends Specification {
         private JsonApiErrorsBuilder builder
 
         @Autowired
-        private HttpErrorsWriter writer
+        private JsonApiErrorsWriter writer
 
         @GetMapping("/exception")
         void exception() {
@@ -145,7 +145,7 @@ class IntegrationTest extends Specification {
     @Autowired
     private JsonApiErrorsBuilder builder
 
-    ResponseEntity<String> get(String path) {
+    ResponseEntity<Object> get(String path) {
         return template.getForEntity("http://localhost:${port}/${path}", String)
     }
 
@@ -160,7 +160,7 @@ class IntegrationTest extends Specification {
             res.body.errors[0].code == "exception.illegal"
             res.body.errors[0].title == "Error title"
             res.body.errors[0].detail == "Error message"
-            res.body.errors[0].source == null
+            res.body.errors[0].source == [:]
         }
     }
 

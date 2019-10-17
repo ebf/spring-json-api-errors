@@ -12,9 +12,9 @@ plugins {
     id("org.jetbrains.dokka") version "0.9.17"
     id("org.datlowe.maven-publish-auth") version "2.0.2"
 
-    kotlin("plugin.jpa") version "1.3.0"
-    kotlin("jvm") version "1.3.0"
-    kotlin("plugin.spring") version "1.3.0"
+    kotlin("jvm") version "1.3.50"
+    kotlin("plugin.jpa") version "1.3.50"
+    kotlin("plugin.spring") version "1.3.50"
 }
 
 group = "de.ebf"

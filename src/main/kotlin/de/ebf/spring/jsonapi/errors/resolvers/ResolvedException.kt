@@ -1,6 +1,6 @@
 package de.ebf.spring.jsonapi.errors.resolvers
 
-import de.ebf.spring.jsonapi.errors.messages.ErrorMessageResolvable
+import de.ebf.spring.jsonapi.errors.messages.Resolvable
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 
@@ -10,5 +10,5 @@ import org.springframework.http.HttpStatus
 data class ResolvedException (
     val status: HttpStatus,
     val headers: HttpHeaders? = HttpHeaders.EMPTY,
-    val errors: Collection<ErrorMessageResolvable>
+    val errors: Collection<Resolvable>
 )

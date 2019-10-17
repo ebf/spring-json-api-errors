@@ -3,13 +3,9 @@ package de.ebf.spring.jsonapi.errors.config
 import de.ebf.spring.jsonapi.errors.builders.JsonApiErrorsBuilder
 import de.ebf.spring.jsonapi.errors.builders.JsonApiErrorsBuilderFactory
 import de.ebf.spring.jsonapi.errors.mappings.ErrorMappingRegistry
-import de.ebf.spring.jsonapi.errors.messages.DefaultErrorMessageSource
-import de.ebf.spring.jsonapi.errors.resolvers.MappingExceptionResolver
-import de.ebf.spring.jsonapi.errors.resolvers.ResponseStatusExceptionResolver
-import de.ebf.spring.jsonapi.errors.resolvers.ValidationExceptionResolver
-import de.ebf.spring.jsonapi.errors.resolvers.WebServletExceptionResolver
-import de.ebf.spring.jsonapi.errors.writer.HttpErrorsWriter
-import de.ebf.spring.jsonapi.errors.writer.ServletHttpErrorsWriter
+import de.ebf.spring.jsonapi.errors.resolvers.*
+import de.ebf.spring.jsonapi.errors.writer.JsonApiErrorsWriter
+import de.ebf.spring.jsonapi.errors.writer.ServletJsonApiErrorsWriter
 import org.springframework.beans.ConversionNotSupportedException
 import org.springframework.beans.TypeMismatchException
 import org.springframework.beans.factory.ObjectProvider
@@ -21,7 +17,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.support.ResourceBundleMessageSource
 import org.springframework.http.HttpStatus
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.http.converter.HttpMessageNotWritableException
@@ -38,9 +33,9 @@ class JsonApiErrorAutoConfiguration @Autowired constructor(
 ) {
 
     @Bean
-    @ConditionalOnMissingBean(HttpErrorsWriter::class)
-    fun defaultHttpErrorsWriter(httpMessageConverters: ObjectProvider<HttpMessageConverters>): HttpErrorsWriter {
-        return ServletHttpErrorsWriter(httpMessageConverters.getObject())
+    @ConditionalOnMissingBean(JsonApiErrorsWriter::class)
+    fun defaultJsonApiErrorsWriter(httpMessageConverters: ObjectProvider<HttpMessageConverters>): JsonApiErrorsWriter {
+        return ServletJsonApiErrorsWriter(httpMessageConverters.getObject())
     }
 
     @Bean
@@ -54,17 +49,14 @@ class JsonApiErrorAutoConfiguration @Autowired constructor(
     @ConditionalOnBean(JsonApiErrorsBuilderFactory::class)
     fun defaultHttpErrorBuilder(factory: JsonApiErrorsBuilderFactory): JsonApiErrorsBuilder {
         val registry = ErrorMappingRegistry()
-        val messageSource = ResourceBundleMessageSource()
-        messageSource.addBasenames("de/ebf/spring/jsonapi/errors/messages")
-        messageSource.setUseCodeAsDefaultMessage(false)
-        messageSource.setAlwaysUseMessageFormat(true)
 
         factory
             .withExceptionResolver(WebServletExceptionResolver())
             .withExceptionResolver(ValidationExceptionResolver())
+            .withExceptionResolver(ResolvableExceptionResolver())
             .withExceptionResolver(ResponseStatusExceptionResolver())
             .withExceptionResolver(MappingExceptionResolver(registry))
-            .withErrorMessageSource(DefaultErrorMessageSource(messageSource))
+            .withMessageBundles("de/ebf/spring/jsonapi/errors/messages")
 
         configurers.forEach { configurer ->
             configurer.configure(registry)

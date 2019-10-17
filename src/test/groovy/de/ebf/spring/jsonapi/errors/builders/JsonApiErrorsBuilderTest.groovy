@@ -53,7 +53,7 @@ class JsonApiErrorsBuilderTest extends Specification {
             entity.body != null
             entity.statusCode == HttpStatus.INTERNAL_SERVER_ERROR
             entity.body.errors[0].code == "default-code"
-            entity.body.errors[0].source == null
+            entity.body.errors[0].source == [:]
             entity.body.errors[0].title == null
             entity.body.errors[0].detail == "default message"
         }
@@ -70,7 +70,7 @@ class JsonApiErrorsBuilderTest extends Specification {
             entity.body != null
             entity.statusCode == HttpStatus.NOT_FOUND
             entity.body.errors[0].code == "error-code"
-            entity.body.errors[0].source == null
+            entity.body.errors[0].source == [:]
             entity.body.errors[0].title == "Error title"
             entity.body.errors[0].detail == "Error message"
         }

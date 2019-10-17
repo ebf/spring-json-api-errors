@@ -25,7 +25,7 @@ class DefaultErrorMessageSourceTest extends Specification {
             message.code == "error-code"
             message.title == "title"
             message.detail == "details"
-            message.source == null
+            message.source == [:]
         }
     }
 
@@ -65,7 +65,7 @@ class DefaultErrorMessageSourceTest extends Specification {
             message.code == "error-code"
             message.detail == "details"
             message.title == null
-            message.source == null
+            message.source == [:]
         }
     }
 
