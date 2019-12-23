@@ -30,6 +30,7 @@ class JsonApiErrorsBuilderFactory {
     private val exceptionResolvers = mutableSetOf<ExceptionResolver>()
     private val errorMessageSources = mutableSetOf<ErrorMessageSource>()
     private var defaultErrorMessageCode = "exception.error-message"
+    private var includeStackTrace: Boolean = false
     private var errorLogger: ErrorLogger = NoopLogger()
 
     fun withErrorMessageSource(errorMessageSource: ErrorMessageSource) = apply {
@@ -72,6 +73,10 @@ class JsonApiErrorsBuilderFactory {
         this.errorLogger = errorLogger
     }
 
+    fun includeStackTrace(includeStackTrace: Boolean) {
+        this.includeStackTrace = includeStackTrace
+    }
+
     fun build(): JsonApiErrorsBuilder {
         Assert.notEmpty(errorMessageSources, "You need to define at least one Error message source")
         Assert.notEmpty(exceptionResolvers, "You need to define at least one Exception resolver")
@@ -87,6 +92,7 @@ class JsonApiErrorsBuilderFactory {
 
         val builder = DefaultJsonApiErrorsBuilder()
         builder.errorLogger = errorLogger
+        builder.includeStackTrace = includeStackTrace
         builder.exceptionResolvers = exceptionResolvers
         builder.errorMessageSource = errorMessageSource
         builder.defaultErrorMessageCode = defaultErrorMessageCode

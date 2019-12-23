@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val springVersion = "2.1.4.RELEASE"
 
 plugins {
+    id("idea")
     id("java-library")
     id("maven-publish")
     id("groovy")
@@ -18,10 +19,16 @@ plugins {
 }
 
 group = "de.ebf"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 
 repositories {
     mavenCentral()
+}
+idea {
+    module {
+        outputDir = file("build/classes/main")
+        testOutputDir = file("build/classes/test")
+    }
 }
 
 dependencies {

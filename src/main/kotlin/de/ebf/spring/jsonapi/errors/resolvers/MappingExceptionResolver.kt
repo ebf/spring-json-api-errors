@@ -24,7 +24,7 @@ class MappingExceptionResolver constructor(
         val mapping = registry.get(throwable.javaClass) ?: return null
 
         return ResolvedException(status = mapping.status!!, errors = listOf(
-            ErrorMessageResolvable(code = mapping.code!!)
+            ErrorMessageResolvable(code = mapping.code!!, defaultMessage = throwable.message)
         ))
     }
 

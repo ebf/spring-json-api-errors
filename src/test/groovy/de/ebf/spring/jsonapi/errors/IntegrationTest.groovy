@@ -172,7 +172,7 @@ class IntegrationTest extends Specification {
         verifyAll {
             result.hasBody()
             result.statusCode == HttpStatus.FORBIDDEN
-            result.body == "{\"errors\":[{\"code\":\"exception.access_denied\",\"detail\":\"Denied\"}]}"
+            result.body == "{\"errors\":[{\"code\":\"exception.access_denied\",\"title\":\"Access denied\",\"detail\":\"Denied\"}]}"
         }
     }
 
@@ -183,8 +183,6 @@ class IntegrationTest extends Specification {
 
         def result = template.postForEntity("http://localhost:${port}/model",
                 new HttpEntity<>(new Model(), headers), String)
-
-        println(result.body)
 
         then:
         verifyAll {

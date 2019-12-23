@@ -17,8 +17,11 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.*
  * and [de.ebf.spring.jsonapi.errors.config.JsonApiErrorConfigurer]
  */
 data class JsonApiErrors @JsonCreator constructor(
-    val errors: Collection<ErrorMessage>
+    val errors: Collection<ErrorMessage>,
+    @field:JsonInclude(NON_NULL) val stackTrace: Any? = null
 ): Serializable {
+
+    constructor(errors: Collection<ErrorMessage>): this(errors, null)
 
     @JsonInclude(NON_EMPTY)
     data class ErrorMessage @JsonCreator constructor(

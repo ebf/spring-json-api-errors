@@ -22,6 +22,8 @@ class DefaultJsonApiErrorsBuilder: JsonApiErrorsBuilder, InitializingBean {
     lateinit var errorMessageSource: ErrorMessageSource
     lateinit var exceptionResolvers: Collection<ExceptionResolver>
 
+    var includeStackTrace: Boolean = false
+
     override fun afterPropertiesSet() {
         Assert.notNull(errorLogger, "Error logger must be set")
         Assert.notNull(errorMessageSource, "Error Message source must be set")
@@ -44,10 +46,12 @@ class DefaultJsonApiErrorsBuilder: JsonApiErrorsBuilder, InitializingBean {
             }
         }
 
+        val stackTrace = if (includeStackTrace) toStackTrace(throwable) else null
+
         return ResponseEntity
             .status(resolvedException.status)
             .headers(resolvedException.headers)
-            .body(JsonApiErrors(errors = errors))
+            .body(JsonApiErrors(errors = errors, stackTrace = stackTrace))
     }
 
     fun resolve(throwable: Throwable): ResolvedException {
@@ -81,4 +85,7 @@ class DefaultJsonApiErrorsBuilder: JsonApiErrorsBuilder, InitializingBean {
         return resolvedException
     }
 
+    private fun toStackTrace(throwable: Throwable): String {
+        return throwable.message + throwable.stackTrace .joinToString("\n") { it.toString() }
+    }
 }
