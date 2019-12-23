@@ -44,6 +44,7 @@ dependencies {
     testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
     testImplementation("org.spockframework:spock-spring:1.3-groovy-2.5")
     testImplementation("com.fasterxml.jackson.core:jackson-databind:2.9.8")
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8")
     testImplementation("org.springframework.boot:spring-boot-starter-web:$springVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-security:$springVersion")
     testImplementation("org.springframework.boot:spring-boot-configuration-processor:$springVersion")

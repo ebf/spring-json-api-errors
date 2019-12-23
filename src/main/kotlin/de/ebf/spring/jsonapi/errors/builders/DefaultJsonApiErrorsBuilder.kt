@@ -12,6 +12,7 @@ import org.springframework.beans.factory.InitializingBean
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.util.Assert
+import java.lang.StringBuilder
 
 class DefaultJsonApiErrorsBuilder: JsonApiErrorsBuilder, InitializingBean {
 
@@ -86,6 +87,12 @@ class DefaultJsonApiErrorsBuilder: JsonApiErrorsBuilder, InitializingBean {
     }
 
     private fun toStackTrace(throwable: Throwable): String {
-        return throwable.message + throwable.stackTrace .joinToString("\n") { it.toString() }
+        val builder = StringBuilder(throwable.message)
+
+        throwable.stackTrace.forEach {
+            builder.append("\n").append(it.toString())
+        }
+
+        return builder.toString()
     }
 }

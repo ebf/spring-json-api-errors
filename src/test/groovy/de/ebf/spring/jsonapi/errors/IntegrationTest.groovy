@@ -1,6 +1,8 @@
 package de.ebf.spring.jsonapi.errors
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.databind.ObjectMapper
+import de.ebf.spring.jsonapi.errors.builders.DefaultJsonApiErrorsBuilder
 import de.ebf.spring.jsonapi.errors.builders.JsonApiErrorsBuilder
 import de.ebf.spring.jsonapi.errors.builders.JsonApiErrorsBuilderFactory
 import de.ebf.spring.jsonapi.errors.config.EnableJsonApiErrors
@@ -140,13 +142,20 @@ class IntegrationTest extends Specification {
     protected Integer port
 
     @Autowired
+    private ObjectMapper mapper
+
+    @Autowired
     private TestRestTemplate template
 
     @Autowired
-    private JsonApiErrorsBuilder builder
+    private DefaultJsonApiErrorsBuilder builder
 
-    ResponseEntity<Object> get(String path) {
+    ResponseEntity<String> get(String path) {
         return template.getForEntity("http://localhost:${port}/${path}", String)
+    }
+
+    def setup() {
+        builder.includeStackTrace = false
     }
 
     def "builder should be able to resolve right error message"() {
@@ -157,6 +166,7 @@ class IntegrationTest extends Specification {
         verifyAll {
             res != null
             res.statusCode == HttpStatus.BAD_REQUEST
+            res.body.stackTrace == null
             res.body.errors[0].code == "exception.illegal"
             res.body.errors[0].title == "Error title"
             res.body.errors[0].detail == "Error message"
@@ -164,15 +174,63 @@ class IntegrationTest extends Specification {
         }
     }
 
-    def "exception should be handled by the exception handler annotation"() {
+    def "builder should be able to resolve right error message and include stack trace"() {
+        given:
+        builder.includeStackTrace = true
+
         when:
-        def result = get("/exception")
+        def res = builder.build(new IllegalArgumentException("Got an exception"))
 
         then:
         verifyAll {
+            res != null
+            res.statusCode == HttpStatus.BAD_REQUEST
+            res.body.stackTrace.startsWith("Got an exception")
+            res.body.errors.first().code == "exception.illegal"
+            res.body.errors.first().title == "Error title"
+            res.body.errors.first().detail == "Error message"
+            res.body.errors.first().source == [:]
+        }
+    }
+
+    def "exception should be handled by the exception handler annotation"() {
+        when:
+        def result = get("/exception")
+        def response = mapper.readValue(result.body, JsonApiErrors)
+
+        then:
+
+        verifyAll {
             result.hasBody()
             result.statusCode == HttpStatus.FORBIDDEN
-            result.body == "{\"errors\":[{\"code\":\"exception.access_denied\",\"title\":\"Access denied\",\"detail\":\"Denied\"}]}"
+            response.stackTrace == null
+            response.errors.size() == 1
+            response.errors.first().code == "exception.access_denied"
+            response.errors.first().title == "Access denied"
+            response.errors.first().detail == "Denied"
+            response.errors.first().source == null
+        }
+    }
+
+    def "should include formatted stack trace"() {
+        given:
+        builder.includeStackTrace = true
+
+        when:
+        def result = get("/exception")
+        def response = mapper.readValue(result.body, JsonApiErrors)
+
+        then:
+
+        verifyAll {
+            result.hasBody()
+            result.statusCode == HttpStatus.FORBIDDEN
+            response.stackTrace.startsWith("Access denied")
+            response.errors.size() == 1
+            response.errors.first().code == "exception.access_denied"
+            response.errors.first().title == "Access denied"
+            response.errors.first().detail == "Denied"
+            response.errors.first().source == null
         }
     }
 

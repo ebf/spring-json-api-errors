@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import java.io.Serializable
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include.*
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * Data model used to structure the error response according to the JSON API specification.
@@ -17,8 +18,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.*
  * and [de.ebf.spring.jsonapi.errors.config.JsonApiErrorConfigurer]
  */
 data class JsonApiErrors @JsonCreator constructor(
-    val errors: Collection<ErrorMessage>,
-    @field:JsonInclude(NON_NULL) val stackTrace: Any? = null
+    @field:JsonProperty val errors: Collection<ErrorMessage>,
+    @field:JsonProperty @field:JsonInclude(NON_NULL) val stackTrace: String? = null
 ): Serializable {
 
     constructor(errors: Collection<ErrorMessage>): this(errors, null)
