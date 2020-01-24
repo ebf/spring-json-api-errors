@@ -176,16 +176,20 @@ class IntegrationTest extends Specification {
 
     def "builder should be able to resolve right error message and include stack trace"() {
         given:
+        def exception = new IllegalArgumentException("Got an exception", new IllegalStateException("Exception cause"))
         builder.includeStackTrace = true
 
+        def writer = new StringWriter()
+        exception.printStackTrace(new PrintWriter(writer, true))
+
         when:
-        def res = builder.build(new IllegalArgumentException("Got an exception"))
+        def res = builder.build(exception)
 
         then:
         verifyAll {
             res != null
             res.statusCode == HttpStatus.BAD_REQUEST
-            res.body.stackTrace.startsWith("Got an exception")
+            res.body.stackTrace == writer.buffer.toString()
             res.body.errors.first().code == "exception.illegal"
             res.body.errors.first().title == "Error title"
             res.body.errors.first().detail == "Error message"

@@ -90,7 +90,7 @@ class DefaultJsonApiErrorsBuilder: JsonApiErrorsBuilder, InitializingBean {
 
     private fun toStackTrace(throwable: Throwable): String {
         val writer = StringWriter()
-        throwable.printStackTrace(PrintWriter(writer, true));
-        return writer.buffer.toString();
+        throwable.printStackTrace(PrintWriter(writer, true))
+        return writer.buffer.toString()
     }
 }
