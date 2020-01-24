@@ -88,7 +88,7 @@ class IntegrationTest extends Specification {
 
         @GetMapping("/exception")
         void exception() {
-            throw new AccessDeniedException("Access denied")
+            throw new AccessDeniedException("Access denied", new IllegalStateException("Exception cause"))
         }
 
         @PostMapping("/model")
@@ -221,11 +221,11 @@ class IntegrationTest extends Specification {
         def response = mapper.readValue(result.body, JsonApiErrors)
 
         then:
-
         verifyAll {
             result.hasBody()
             result.statusCode == HttpStatus.FORBIDDEN
-            response.stackTrace.startsWith("Access denied")
+            response.stackTrace.startsWith("org.springframework.security.access.AccessDeniedException: Access denied")
+            response.stackTrace.contains("Caused by: java.lang.IllegalStateException: Exception cause")
             response.errors.size() == 1
             response.errors.first().code == "exception.access_denied"
             response.errors.first().title == "Access denied"
