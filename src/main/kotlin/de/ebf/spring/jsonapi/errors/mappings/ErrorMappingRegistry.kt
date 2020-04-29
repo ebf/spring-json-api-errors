@@ -9,10 +9,10 @@ package de.ebf.spring.jsonapi.errors.mappings
  */
 class ErrorMappingRegistry {
 
-    private var mappings = HashMap<Class<out Throwable>, ErrorMappingRegistration>()
+    private var mappings = HashMap<Class<out Throwable>, ErrorMappingRegistration<out Throwable>>()
 
-    fun register(type: Class<out Throwable>): ErrorMappingRegistration {
-        var mapping = mappings[type]
+    fun <T: Throwable> register(type: Class<T>): ErrorMappingRegistration<T> {
+        var mapping = get(type)
 
         if (mapping == null) {
             mapping = ErrorMappingRegistration()
@@ -22,8 +22,9 @@ class ErrorMappingRegistry {
         return mapping
     }
 
-    fun get(type: Class<out Throwable>): ErrorMappingRegistration? {
-        return mappings[type]
+    @Suppress("UNCHECKED_CAST")
+    fun <T: Throwable> get(type: Class<T>): ErrorMappingRegistration<T>? {
+        return mappings[type] as ErrorMappingRegistration<T>?
     }
 
 }

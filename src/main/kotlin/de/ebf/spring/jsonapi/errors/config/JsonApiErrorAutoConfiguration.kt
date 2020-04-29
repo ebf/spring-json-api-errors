@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
@@ -23,11 +24,13 @@ import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.*
 import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.util.StringUtils
 import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.bind.ServletRequestBindingException
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException
 
 @Configuration
+@EnableConfigurationProperties(JsonApiErrorProperties::class)
 class JsonApiErrorAutoConfiguration @Autowired constructor(
     private val configurers: Collection<JsonApiErrorConfigurer>
 ) {
@@ -47,7 +50,8 @@ class JsonApiErrorAutoConfiguration @Autowired constructor(
     @Bean
     @ConditionalOnMissingBean(JsonApiErrorsBuilder::class)
     @ConditionalOnBean(JsonApiErrorsBuilderFactory::class)
-    fun defaultHttpErrorBuilder(factory: JsonApiErrorsBuilderFactory): JsonApiErrorsBuilder {
+    fun defaultHttpErrorBuilder(factory: JsonApiErrorsBuilderFactory,
+                                properties: JsonApiErrorProperties): JsonApiErrorsBuilder {
         val registry = ErrorMappingRegistry()
 
         factory
@@ -57,6 +61,11 @@ class JsonApiErrorAutoConfiguration @Autowired constructor(
             .withExceptionResolver(ResponseStatusExceptionResolver())
             .withExceptionResolver(MappingExceptionResolver(registry))
             .withMessageBundles("de/ebf/spring/jsonapi/errors/messages")
+            .includeStackTrace(properties.includeStackTrace)
+
+        properties.messageBundles
+            .filter { StringUtils.hasText(it) }
+            .forEach { factory.withMessageBundles(it) }
 
         configurers.forEach { configurer ->
             configurer.configure(registry)

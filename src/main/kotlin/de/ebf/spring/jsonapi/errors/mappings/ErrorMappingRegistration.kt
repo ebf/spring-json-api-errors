@@ -1,6 +1,7 @@
 package de.ebf.spring.jsonapi.errors.mappings
 
 import org.springframework.http.HttpStatus
+import java.util.function.Function
 
 /**
  * Class that contains the configuration on how should an exception be
@@ -10,13 +11,21 @@ import org.springframework.http.HttpStatus
  * @see de.ebf.spring.jsonapi.errors.config.JsonApiErrorConfigurer
  * @see ErrorMappingRegistry
  */
-class ErrorMappingRegistration {
+class ErrorMappingRegistration<T: Throwable> {
 
     var code: String? = null
-    var status: HttpStatus? = HttpStatus.INTERNAL_SERVER_ERROR
+        private set
 
-    fun code(code: String): ErrorMappingRegistration = apply { this.code = code }
+    var status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR
+        private set
 
-    fun status(status: HttpStatus): ErrorMappingRegistration = apply { this.status = status }
+    var resolver: Function<T, List<Any>>? = null
+        private set
+
+    fun code(code: String): ErrorMappingRegistration<T> = apply { this.code = code }
+
+    fun status(status: HttpStatus): ErrorMappingRegistration<T> = apply { this.status = status }
+
+    fun resolver(resolver: Function<T, List<Any>>): ErrorMappingRegistration<T> = apply { this.resolver = resolver }
 
 }

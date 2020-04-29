@@ -2,7 +2,7 @@ import org.gradle.jvm.tasks.Jar
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val springVersion = "2.1.4.RELEASE"
+val springVersion = "2.2.6.RELEASE"
 
 plugins {
     id("idea")
@@ -11,15 +11,14 @@ plugins {
     id("groovy")
     id("jacoco")
     id("org.jetbrains.dokka") version "0.9.17"
-    id("org.datlowe.maven-publish-auth") version "2.0.2"
 
-    kotlin("jvm") version "1.3.50"
-    kotlin("plugin.jpa") version "1.3.50"
-    kotlin("plugin.spring") version "1.3.50"
+    kotlin("jvm") version "1.3.72"
+    kotlin("plugin.jpa") version "1.3.72"
+    kotlin("plugin.spring") version "1.3.72"
 }
 
 group = "de.ebf"
-version = "0.0.2"
+version = "0.0.3"
 
 repositories {
     mavenCentral()
@@ -48,6 +47,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-web:$springVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-security:$springVersion")
     testImplementation("org.springframework.boot:spring-boot-configuration-processor:$springVersion")
+}
+
+java {
+    withSourcesJar()
 }
 
 val dokkaJar by tasks.creating(Jar::class) {
@@ -81,6 +84,13 @@ publishing {
               }
             }
         }
+    }
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs = listOf("-Xjsr305=strict", "-Xjvm-default=enable")
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 }
 

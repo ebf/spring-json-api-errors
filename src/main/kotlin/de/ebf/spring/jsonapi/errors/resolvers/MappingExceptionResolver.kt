@@ -22,9 +22,10 @@ class MappingExceptionResolver constructor(
 
     override fun resolve(throwable: Throwable): ResolvedException? {
         val mapping = registry.get(throwable.javaClass) ?: return null
+        val arguments = mapping.resolver?.apply(throwable)?.toTypedArray() ?: arrayOf()
 
-        return ResolvedException(status = mapping.status!!, errors = listOf(
-            ErrorMessageResolvable(code = mapping.code!!, defaultMessage = throwable.message)
+        return ResolvedException(status = mapping.status, errors = listOf(
+            ErrorMessageResolvable(code = mapping.code!!, defaultMessage = throwable.message, arguments = arguments)
         ))
     }
 

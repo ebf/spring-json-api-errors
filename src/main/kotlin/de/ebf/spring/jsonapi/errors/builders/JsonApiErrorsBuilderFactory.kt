@@ -73,7 +73,7 @@ class JsonApiErrorsBuilderFactory {
         this.errorLogger = errorLogger
     }
 
-    fun includeStackTrace(includeStackTrace: Boolean) {
+    fun includeStackTrace(includeStackTrace: Boolean) = apply {
         this.includeStackTrace = includeStackTrace
     }
 
