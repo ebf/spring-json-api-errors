@@ -13,12 +13,13 @@ plugins {
     id("org.jetbrains.dokka") version "0.9.17"
 
     kotlin("jvm") version "1.3.72"
+    kotlin("kapt") version "1.3.72"
     kotlin("plugin.jpa") version "1.3.72"
     kotlin("plugin.spring") version "1.3.72"
 }
 
 group = "de.ebf"
-version = "0.0.3"
+version = "0.0.4"
 
 repositories {
     mavenCentral()
@@ -37,6 +38,10 @@ dependencies {
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
+    /* Process Spring Boot properties classes */
+    kapt("org.springframework.boot:spring-boot-configuration-processor:$springVersion")
+    compileOnly("org.springframework.boot:spring-boot-configuration-processor:$springVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
 

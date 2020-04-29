@@ -60,12 +60,10 @@ class JsonApiErrorAutoConfiguration @Autowired constructor(
             .withExceptionResolver(ResolvableExceptionResolver())
             .withExceptionResolver(ResponseStatusExceptionResolver())
             .withExceptionResolver(MappingExceptionResolver(registry))
-            .withMessageBundles("de/ebf/spring/jsonapi/errors/messages")
+            .withMessageBundles(properties.defaultMessageBundle)
             .includeStackTrace(properties.includeStackTrace)
 
-        properties.messageBundles
-            .filter { StringUtils.hasText(it) }
-            .forEach { factory.withMessageBundles(it) }
+        properties.messageBundles.forEach { factory.withMessageBundles(it) }
 
         configurers.forEach { configurer ->
             configurer.configure(registry)

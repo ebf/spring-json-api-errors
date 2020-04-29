@@ -1,3 +1,9 @@
+json-api:
+  errors:
+    message-bundles:
+      - "de/ebf/spring/jsonapi/errors/additional-messages"
+      - "de/ebf/spring/jsonapi/errors/test-errors"
+
 logging:
   level:
     de.ebf.spring.jsonapi.errors: DEBUG

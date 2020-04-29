@@ -1,11 +1,9 @@
 package de.ebf.spring.jsonapi.errors.builders
 
 import de.ebf.spring.jsonapi.errors.logging.ErrorLogger
-import de.ebf.spring.jsonapi.errors.messages.DefaultErrorMessageSource
-import de.ebf.spring.jsonapi.errors.messages.ErrorMessageSourceComposite
+import de.ebf.spring.jsonapi.errors.messages.DelegatingErrorMessageSource
 import de.ebf.spring.jsonapi.errors.messages.ErrorMessageSource
 import de.ebf.spring.jsonapi.errors.resolvers.ExceptionResolver
-import org.springframework.context.MessageSource
 import org.springframework.context.support.ResourceBundleMessageSource
 import org.springframework.core.OrderComparator
 import org.springframework.util.Assert
@@ -28,30 +26,26 @@ import org.springframework.util.Assert
 class JsonApiErrorsBuilderFactory {
 
     private val exceptionResolvers = mutableSetOf<ExceptionResolver>()
-    private val errorMessageSources = mutableSetOf<ErrorMessageSource>()
+    private val errorMessageBundles = mutableSetOf<String>()
     private var defaultErrorMessageCode = "exception.error-message"
     private var includeStackTrace: Boolean = false
     private var errorLogger: ErrorLogger = NoopLogger()
+    private var errorMessageSource: ErrorMessageSource? = null
 
+    /**
+     * Configure a custom [ErrorMessageSource] that should be used to resolve exception messages.
+     * When a custom message source is used, the configured error message bundles are ignored
+     */
     fun withErrorMessageSource(errorMessageSource: ErrorMessageSource) = apply {
         Assert.notNull(errorMessageSource, "Error message source can not be null")
-        this.errorMessageSources.add(errorMessageSource)
-    }
-
-    fun witMessageSource(messageSource: MessageSource) = apply {
-        Assert.notNull(messageSource, "Message source can not be null")
-        this.errorMessageSources.add(DefaultErrorMessageSource(messageSource))
+        this.errorMessageSource = errorMessageSource
     }
 
     fun withMessageBundles(vararg bundles: String) = apply {
         Assert.notEmpty(bundles, "Message bundle locations can not be empty")
         Assert.noNullElements(bundles, "Message bundle locations can not contain null elements")
 
-        val source = ResourceBundleMessageSource()
-        source.addBasenames(*bundles)
-        source.setUseCodeAsDefaultMessage(false)
-        source.setAlwaysUseMessageFormat(true)
-        witMessageSource(source)
+        this.errorMessageBundles.addAll(bundles)
     }
 
     fun withExceptionResolver(exceptionResolver: ExceptionResolver) = apply {
@@ -78,23 +72,25 @@ class JsonApiErrorsBuilderFactory {
     }
 
     fun build(): JsonApiErrorsBuilder {
-        Assert.notEmpty(errorMessageSources, "You need to define at least one Error message source")
         Assert.notEmpty(exceptionResolvers, "You need to define at least one Exception resolver")
 
         // sort resolvers
         val exceptionResolvers = ArrayList(this.exceptionResolvers).sortedWith(OrderComparator.INSTANCE)
 
-        // sort sources
-        val errorMessageSource = ErrorMessageSourceComposite()
-        this.errorMessageSources.sortedWith(OrderComparator.INSTANCE).forEach { source ->
-            errorMessageSource.addErrorMessageSource(source)
+        // build error message source
+        if (this.errorMessageSource == null) {
+            val source = ResourceBundleMessageSource()
+            source.addBasenames(*this.errorMessageBundles.toTypedArray())
+            source.setUseCodeAsDefaultMessage(false)
+            source.setAlwaysUseMessageFormat(true)
+            this.errorMessageSource = DelegatingErrorMessageSource(source)
         }
 
         val builder = DefaultJsonApiErrorsBuilder()
         builder.errorLogger = errorLogger
         builder.includeStackTrace = includeStackTrace
         builder.exceptionResolvers = exceptionResolvers
-        builder.errorMessageSource = errorMessageSource
+        builder.errorMessageSource = errorMessageSource!!
         builder.defaultErrorMessageCode = defaultErrorMessageCode
 
         return builder

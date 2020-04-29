@@ -8,7 +8,6 @@ import de.ebf.spring.jsonapi.errors.builders.JsonApiErrorsBuilderFactory
 import de.ebf.spring.jsonapi.errors.config.EnableJsonApiErrors
 import de.ebf.spring.jsonapi.errors.config.JsonApiErrorConfigurer
 import de.ebf.spring.jsonapi.errors.mappings.ErrorMappingRegistry
-import de.ebf.spring.jsonapi.errors.messages.DefaultErrorMessageSource
 import de.ebf.spring.jsonapi.errors.writer.JsonApiErrorsWriter
 import groovy.json.JsonOutput
 import org.jetbrains.annotations.NotNull
@@ -19,9 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
-import org.springframework.context.i18n.LocaleContextHolder
-import org.springframework.context.support.StaticMessageSource
-import org.springframework.core.Ordered
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -62,18 +58,7 @@ class IntegrationTest extends Specification {
 
         @Override
         void configure(@NotNull JsonApiErrorsBuilderFactory factory) {
-            def source = new StaticMessageSource()
-            source.addMessages([
-                    "email.missing": "Empty email address",
-                    "exception.default-code": "Default message",
-                    "exception.illegal.title": "Error title",
-                    "exception.illegal.message": "Error message",
-                    "exception.async_timeout": "Request timeout",
-                    "exception.access_denied": "Denied"
-            ], LocaleContextHolder.getLocale())
-
-            factory.withErrorMessageSource(new DefaultErrorMessageSource(source, Ordered.HIGHEST_PRECEDENCE))
-                .withDefaultErrorMessageCode("exception.default-code")
+            factory.withDefaultErrorMessageCode("exception.default-code")
         }
     }
 
@@ -211,7 +196,7 @@ class IntegrationTest extends Specification {
             response.errors.size() == 1
             response.errors.first().code == "exception.access_denied"
             response.errors.first().title == "Access denied"
-            response.errors.first().detail == "Denied"
+            response.errors.first().detail == "It seems you do not have enough permissions to perform this action"
             response.errors.first().source == null
         }
     }
@@ -233,7 +218,7 @@ class IntegrationTest extends Specification {
             response.errors.size() == 1
             response.errors.first().code == "exception.access_denied"
             response.errors.first().title == "Access denied"
-            response.errors.first().detail == "Denied"
+            response.errors.first().detail == "It seems you do not have enough permissions to perform this action"
             response.errors.first().source == null
         }
     }
@@ -251,7 +236,7 @@ class IntegrationTest extends Specification {
             result.hasBody()
             result.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
             result.body == JsonOutput.toJson([errors: [
-                    [code: "NotEmpty", title: "must not be empty", detail: "must not be empty", source: [pointer: "username"]],
+                    [code: "NotEmpty", detail: "must not be empty", source: [pointer: "username"]],
                     [code: "email.missing", detail: "Empty email address", source: [pointer: "inner/email"]]
              ]])
         }
@@ -265,7 +250,8 @@ class IntegrationTest extends Specification {
         verifyAll {
             result.hasBody()
             result.statusCode == HttpStatus.SERVICE_UNAVAILABLE
-            result.body == "{\"errors\":[{\"code\":\"exception.async_timeout\",\"detail\":\"Request timeout\"}]}"
+            result.body == "{\"errors\":[{\"code\":\"exception.async_timeout\",\"title\":\"Service Unavailable\"," +
+                    "\"detail\":\"Could not connect to server, please contact the administrator or try again later.\"}]}"
         }
     }
 

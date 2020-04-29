@@ -5,110 +5,101 @@ import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.NoSuchMessageException
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.context.support.MessageSourceAccessor
+import org.springframework.context.support.ResourceBundleMessageSource
 import org.springframework.context.support.StaticMessageSource
 import spock.lang.Specification
 
 class DefaultErrorMessageSourceTest extends Specification {
+
+    ErrorMessageSource source
+
+    def setup() {
+        def bundle = new ResourceBundleMessageSource()
+        bundle.addBasenames("de/ebf/spring/jsonapi/errors/messages",
+                "de/ebf/spring/jsonapi/errors/additional-messages",
+                "de/ebf/spring/jsonapi/errors/test-errors")
+        bundle.setUseCodeAsDefaultMessage(false)
+        bundle.setAlwaysUseMessageFormat(true)
+
+        source = new DelegatingErrorMessageSource(bundle)
+    }
+
     def "should resolve message with no arguments"() {
         given:
-        MessageSourceAccessor accessor = Mock()
-        def source = new DefaultErrorMessageSource(accessor)
         JsonApiErrors.ErrorMessage message
 
         when:
-        2 * accessor.getMessage(_ as MessageSourceResolvable) >>> ["title", "details"]
-        message = source.get(new ErrorMessageResolvable("error-code"))
+        message = source.get(new ErrorMessageResolvable("errors.test-error"))
 
         then:
         verifyAll {
             message != null
-            message.code == "error-code"
-            message.title == "title"
-            message.detail == "details"
+            message.code == "errors.test-error"
+            message.title == "Test error title"
+            message.detail == "Test error message"
             message.source == [:]
         }
     }
 
     def "should resolve message with arguments and source"() {
         given:
-        MessageSourceAccessor accessor = Mock()
-        def source = new DefaultErrorMessageSource(accessor)
         JsonApiErrors.ErrorMessage message
 
         when:
-        2 * accessor.getMessage(_ as MessageSourceResolvable) >>> [null, "details"]
-        message = source.get(new ErrorMessageResolvable("error-code", ["argument"].toArray(), [pointer: "/path"]))
+        message = source.get(new ErrorMessageResolvable("errors.test-error-arguments",
+                ["first", "second", "third"].toArray(), [pointer: "/path"]))
 
         then:
         verifyAll {
             message != null
-            message.code == "error-code"
-            message.title == null
-            message.detail == "details"
+            message.code == "errors.test-error-arguments"
+            message.title == "Test error title first"
+            message.detail == "Test error message with arguments: third - first - second"
             message.source == [pointer: "/path"]
         }
     }
 
     def "should ignore thrown exception for missing title"() {
         given:
-        MessageSourceAccessor accessor = Mock()
-        def source = new DefaultErrorMessageSource(accessor)
         JsonApiErrors.ErrorMessage message
 
         when:
-        2 * accessor.getMessage(_ as MessageSourceResolvable) >>> [null, "details"]
-        message = source.get(new ErrorMessageResolvable("error-code"))
+        message = source.get(new ErrorMessageResolvable("errors.test-error-just-message"))
 
         then:
         verifyAll {
             message != null
-            message.code == "error-code"
-            message.detail == "details"
+            message.code == "errors.test-error-just-message"
+            message.detail == "Test error message with no title"
+            message.title == null
+            message.source == [:]
+        }
+    }
+
+    def "should use default message when code is missing"() {
+        given:
+        JsonApiErrors.ErrorMessage message
+
+        when:
+        message = source.get(new ErrorMessageResolvable("errors.missing-error-code", new Object[0],
+                [:], "Default message"))
+
+        then:
+        verifyAll {
+            message != null
+            message.code == "errors.missing-error-code"
+            message.detail == "Default message"
             message.title == null
             message.source == [:]
         }
     }
 
     def "should not ignore thrown exception for missing details"() {
-        given:
-        MessageSourceAccessor accessor = Mock()
-        def source = new DefaultErrorMessageSource(accessor)
-
         when:
-        2 * accessor.getMessage(_ as MessageSourceResolvable) >> { args ->
-            throw new NoSuchMessageException("code")
-        }
-        source.get(new ErrorMessageResolvable("error-code"))
+        source.get(new ErrorMessageResolvable("errors.missing-error-code"))
 
         then:
         thrown(NoSuchMessageException.class)
-    }
-
-    def "message should be formatted"() {
-        given:
-        def source = new StaticMessageSource()
-        source.setAlwaysUseMessageFormat(true)
-        source.addMessages([
-                "error-code.title": "{0} Title",
-                "error-code.message": "Message {2} - {0} - {1}"
-        ], LocaleContextHolder.getLocale())
-
-        def errorMessageSource = new DefaultErrorMessageSource(source)
-        def resolvable = new ErrorMessageResolvable("error-code", [
-                "first", "second", "third"
-        ].toArray(), [path: "path"])
-
-        when:
-        def message = errorMessageSource.get(resolvable)
-
-        then:
-        verifyAll {
-            message != null
-            message.code == "error-code"
-            message.title == "first Title"
-            message.detail == "Message third - first - second"
-            message.source == [path: "path"]
-        }
     }
 
     def "message resolvable should have equals implemented"() {

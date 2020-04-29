@@ -9,7 +9,8 @@ import org.springframework.core.Ordered
  *
  * @see ErrorMessageResolvable
  */
-interface ErrorMessageSource: Ordered {
+@FunctionalInterface
+interface ErrorMessageSource {
 
     /**
      * Tries to create an {@link ErrorMessage} instance based on the resolved Error

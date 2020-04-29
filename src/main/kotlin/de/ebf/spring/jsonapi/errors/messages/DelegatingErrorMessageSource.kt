@@ -5,33 +5,25 @@ import org.springframework.context.MessageSource
 import org.springframework.context.NoSuchMessageException
 import org.springframework.context.support.DefaultMessageSourceResolvable
 import org.springframework.context.support.MessageSourceAccessor
-import org.springframework.core.Ordered
 
 /**
- * Default implementation of the [ErrorMessageSource] that uses the
+ * Default implementation of the [ErrorMessageSource] that uses Spring's
  * [MessageSourceAccessor] and [MessageSource] to resolve exception messages.
  */
-class DefaultErrorMessageSource constructor(
-    private var messageSourceAccessor: MessageSourceAccessor,
-    private var order: Int = Ordered.LOWEST_PRECEDENCE
+class DelegatingErrorMessageSource constructor(
+    private var messageSourceAccessor: MessageSourceAccessor
 ): ErrorMessageSource {
 
     constructor(messageSource: MessageSource): this(MessageSourceAccessor(messageSource))
-    constructor(messageSource: MessageSource, order: Int): this(MessageSourceAccessor(messageSource), order)
-    constructor(messageSourceAccessor: MessageSourceAccessor): this(messageSourceAccessor, Ordered.LOWEST_PRECEDENCE)
-
-    override fun getOrder(): Int {
-        return order
-    }
 
     override fun get(resolvable: Resolvable): JsonApiErrors.ErrorMessage {
         var title: String? = null
 
-        val arguments = resolvable.arguments.filterNotNull().toTypedArray()
+        val arguments = resolvable.arguments
 
         try {
             title = messageSourceAccessor.getMessage(DefaultMessageSourceResolvable(
-                arrayOf("${resolvable.code}.title"), arguments, resolvable.defaultMessage
+                arrayOf("${resolvable.code}.title"), arguments, null
             ))
         } catch (e: NoSuchMessageException) {
             // ignore
