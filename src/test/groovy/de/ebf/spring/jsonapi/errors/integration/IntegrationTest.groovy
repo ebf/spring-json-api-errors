@@ -1,127 +1,22 @@
-package de.ebf.spring.jsonapi.errors
+package de.ebf.spring.jsonapi.errors.integration
 
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.databind.ObjectMapper
+import de.ebf.spring.jsonapi.errors.JsonApiErrors
 import de.ebf.spring.jsonapi.errors.builders.DefaultJsonApiErrorsBuilder
-import de.ebf.spring.jsonapi.errors.builders.JsonApiErrorsBuilder
-import de.ebf.spring.jsonapi.errors.builders.JsonApiErrorsBuilderFactory
-import de.ebf.spring.jsonapi.errors.config.EnableJsonApiErrors
-import de.ebf.spring.jsonapi.errors.config.JsonApiErrorConfigurer
-import de.ebf.spring.jsonapi.errors.mappings.ErrorMappingRegistry
-import de.ebf.spring.jsonapi.errors.writer.JsonApiErrorsWriter
 import groovy.json.JsonOutput
-import org.jetbrains.annotations.NotNull
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
-import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.AccessDeniedException
-import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.ExceptionHandler
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.context.request.async.AsyncRequestTimeoutException
-import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import spock.lang.Specification
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import javax.validation.Valid
-import javax.validation.constraints.Email
-import javax.validation.constraints.NotEmpty
 
 @SpringBootTest(classes = IntegrationTestApplication, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class IntegrationTest extends Specification {
-
-    @EnableWebMvc
-    @EnableJsonApiErrors
-    @Import(IntegrationTestController)
-    @EnableAutoConfiguration(exclude = SecurityAutoConfiguration)
-    static class IntegrationTestApplication implements JsonApiErrorConfigurer {
-
-        @Override
-        void configure(@NotNull ErrorMappingRegistry registry) {
-            registry.register(IllegalArgumentException).code("exception.illegal")
-                    .status(HttpStatus.BAD_REQUEST)
-        }
-
-        @Override
-        void configure(@NotNull JsonApiErrorsBuilderFactory factory) {
-            factory.withDefaultErrorMessageCode("exception.default-code")
-        }
-    }
-
-    @RestController
-    static class IntegrationTestController {
-
-        @Autowired
-        private JsonApiErrorsBuilder builder
-
-        @Autowired
-        private JsonApiErrorsWriter writer
-
-        @GetMapping("/exception")
-        void exception() {
-            throw new AccessDeniedException("Access denied", new IllegalStateException("Exception cause"))
-        }
-
-        @PostMapping("/model")
-        def model(@Validated @RequestBody Model model) {
-            return model
-        }
-
-        @GetMapping("/writer")
-        def writer(HttpServletRequest request, HttpServletResponse response) {
-            writer.write(request, response, builder.build(new AsyncRequestTimeoutException()))
-        }
-
-        @GetMapping("/parameter")
-        def parameter(@RequestParam("parameter") Integer param) {
-            return param
-        }
-
-        @ExceptionHandler(Throwable.class)
-        def handler(Throwable throwable) {
-            return builder.build(throwable)
-        }
-
-    }
-
-    static class Model {
-
-        @NotEmpty
-        String username
-
-        @Valid
-        @NotNull
-        InnerModel inner
-
-        @JsonCreator Model() {
-            username = null
-            inner = new InnerModel()
-        }
-
-        class InnerModel {
-            @Email
-            @NotEmpty(message = "{email.missing}")
-            String email
-
-            @JsonCreator InnerModel() {
-                email = null
-            }
-        }
-    }
 
     @LocalServerPort
     protected Integer port
@@ -229,7 +124,9 @@ class IntegrationTest extends Specification {
         headers.setContentType(MediaType.APPLICATION_JSON)
 
         def result = template.postForEntity("http://localhost:${port}/model",
-                new HttpEntity<>(new Model(), headers), String)
+                new HttpEntity<>(new IntegrationTestController.Model(), headers), String)
+
+        println(result)
 
         then:
         verifyAll {
@@ -239,6 +136,25 @@ class IntegrationTest extends Specification {
                     [code: "NotEmpty", detail: "must not be empty", source: [pointer: "username"]],
                     [code: "email.missing", detail: "Empty email address", source: [pointer: "inner/email"]]
              ]])
+        }
+    }
+
+    def "model should be validated by javax.validation.Validator"() {
+        when:
+        def headers = new HttpHeaders()
+        headers.setContentType(MediaType.APPLICATION_JSON)
+
+        def result = template.postForEntity("http://localhost:${port}/constraint-validator",
+                new HttpEntity<>(new IntegrationTestController.Model(), headers), String)
+
+        then:
+        verifyAll {
+            result.hasBody()
+            result.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
+            result.body == JsonOutput.toJson([errors: [
+                    [code: "email.missing", detail: "Empty email address", source: [pointer: "inner/email"]],
+                    [code: "javax.validation.constraints.NotEmpty.message", detail: "must not be empty", source: [pointer: "username"]],
+            ]])
         }
     }
 
