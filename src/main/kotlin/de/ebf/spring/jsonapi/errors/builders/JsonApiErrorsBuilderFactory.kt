@@ -7,6 +7,11 @@ import de.ebf.spring.jsonapi.errors.resolvers.ExceptionResolver
 import org.springframework.context.support.ResourceBundleMessageSource
 import org.springframework.core.OrderComparator
 import org.springframework.util.Assert
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
+import java.time.Duration
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * Factory class used to construct and configure the [JsonApiErrorsBuilder] which
@@ -27,6 +32,9 @@ class JsonApiErrorsBuilderFactory {
 
     private val exceptionResolvers = mutableSetOf<ExceptionResolver>()
     private val errorMessageBundles = mutableSetOf<String>()
+    private var cacheErrorMessages = true
+    private var defaultErrorMessageLocale = Locale.getDefault()
+    private var defaultErrorMessageEncoding = StandardCharsets.UTF_8
     private var defaultErrorMessageCode = "exception.error-message"
     private var includeStackTrace: Boolean = false
     private var errorLogger: ErrorLogger = NoopLogger()
@@ -63,6 +71,20 @@ class JsonApiErrorsBuilderFactory {
         this.defaultErrorMessageCode = defaultErrorMessageCode
     }
 
+    fun withDefaultErrorMessageEncoding(defaultErrorMessageEncoding: String) = apply {
+        Assert.hasText(defaultErrorMessageEncoding, "Default error message encoding can not be be empty")
+        this.defaultErrorMessageEncoding = Charset.forName(defaultErrorMessageEncoding)
+    }
+
+    fun withDefaultErrorMessageLocale(defaultErrorMessageLocale: Locale) = apply {
+        Assert.notNull(defaultErrorMessageLocale, "Default error message locale can not be be null")
+        this.defaultErrorMessageLocale = defaultErrorMessageLocale
+    }
+
+    fun withCacheErrorMessages(cacheErrorMessages: Boolean) = apply {
+        this.cacheErrorMessages = cacheErrorMessages
+    }
+
     fun withErrorLogger(errorLogger: ErrorLogger) = apply {
         this.errorLogger = errorLogger
     }
@@ -83,6 +105,9 @@ class JsonApiErrorsBuilderFactory {
             source.addBasenames(*this.errorMessageBundles.toTypedArray())
             source.setUseCodeAsDefaultMessage(false)
             source.setAlwaysUseMessageFormat(true)
+            source.setCacheMillis(if (cacheErrorMessages) -1 else 0)
+            source.setDefaultLocale(defaultErrorMessageLocale)
+            source.setDefaultEncoding(defaultErrorMessageEncoding.name())
             this.errorMessageSource = DelegatingErrorMessageSource(source)
         }
 

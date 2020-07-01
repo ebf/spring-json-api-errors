@@ -60,8 +60,11 @@ class JsonApiErrorAutoConfiguration @Autowired constructor(
             .withExceptionResolver(ResolvableExceptionResolver())
             .withExceptionResolver(ResponseStatusExceptionResolver())
             .withExceptionResolver(MappingExceptionResolver(registry))
+            .withDefaultErrorMessageEncoding(properties.defaultEncoding)
+            .withDefaultErrorMessageLocale(properties.defaultLocale)
             .withMessageBundles(properties.defaultMessageBundle)
             .includeStackTrace(properties.includeStackTrace)
+            .withCacheErrorMessages(properties.cache)
 
         properties.messageBundles.forEach { factory.withMessageBundles(it) }
 

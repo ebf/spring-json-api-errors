@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import spock.lang.Specification
 
+import java.nio.charset.StandardCharsets
+
 class JsonApiErrorsBuilderTest extends Specification {
 
     def "should create a builder instance and build an http error object"() {
@@ -64,7 +66,39 @@ class JsonApiErrorsBuilderTest extends Specification {
         }
     }
 
-    def "should resolvers by order and use custom message source"() {
+    def "should use defined charset when encoding error messages"() {
+        given:
+        def resolver = Mock(ExceptionResolver)
+        def logger = Mock(ErrorLogger)
+
+        def builder = new JsonApiErrorsBuilderFactory().withErrorLogger(logger)
+                .withExceptionResolver(resolver)
+                .withDefaultErrorMessageEncoding(StandardCharsets.UTF_8.name())
+                .withMessageBundles("de/ebf/spring/jsonapi/errors/encoding-test-errors")
+                .build()
+
+        ResponseEntity<JsonApiErrors> entity
+
+        when:
+        1 * logger.log(_ as IllegalArgumentException)
+        1 * resolver.resolve(_ as IllegalArgumentException) >> new ResolvedException(HttpStatus.NOT_FOUND,
+                HttpHeaders.EMPTY, [new ErrorMessageResolvable("errors.test-error")])
+
+        entity = builder.build(new IllegalArgumentException())
+
+        then:
+        verifyAll {
+            entity != null
+            entity.body != null
+            entity.statusCode == HttpStatus.NOT_FOUND
+            entity.body.errors[0].code == "errors.test-error"
+            entity.body.errors[0].source == [:]
+            entity.body.errors[0].title == "Fehler"
+            entity.body.errors[0].detail == "Ihr Token ist abgelaufen, zurückgezogen oder aus anderem Grund ungültig."
+        }
+    }
+
+    def "should sort resolvers by order and use custom message source"() {
         given:
         def source = createErrorMessageSource()
         def factory = new JsonApiErrorsBuilderFactory()
