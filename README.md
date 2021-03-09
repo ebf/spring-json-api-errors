@@ -143,11 +143,40 @@ class MyException extends RuntimeException implements Resolvable {
 ...
 }
 ```
-or use the `JsonApiResolvableException` as a base class:
+or use the `JsonApiResolvableException` as a base class where the supplied message would be used a fallback error message in case the `errors.my-exception.message` or `errors.my-exception` is not present in the defined message sources.
 ```java
 class MyException extends JsonApiResolvableException {
-...
+
+    public MyException(String message) {
+        super("errors.my-exception", message);
+    }
+
 }
+```
+
+If you wish to supply dynamic arguments for message interpolation you can define custom arguments for your exception like so:
+
+```java
+class MyArgumentException extends JsonApiResolvableException {
+
+    private final Object[] arguments;
+
+    public MyArgumentException(String message, Object argument) {
+        super("errors.my-exception-with.argument", message);
+        this.arguments = new Object[] { argument };
+    }
+    
+    @Override
+    public Object[] getArguments() {
+        return arguments;
+    }
+
+}
+```
+
+Then your properties file you can add something like this:
+```properties
+errors.my-exception-with.argument.message=Something went wrong with {0}
 ```
 
 #### MappingExceptionResolver
