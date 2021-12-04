@@ -1,14 +1,13 @@
 package de.ebf.spring.jsonapi.errors.builders
 
 import de.ebf.spring.jsonapi.errors.JsonApiErrors
+import de.ebf.spring.jsonapi.errors.exceptions.JsonApiException
 import de.ebf.spring.jsonapi.errors.logging.ErrorLogger
-import de.ebf.spring.jsonapi.errors.messages.DelegatingErrorMessageSource
 import de.ebf.spring.jsonapi.errors.messages.ErrorMessageResolvable
 import de.ebf.spring.jsonapi.errors.messages.ErrorMessageSource
+import de.ebf.spring.jsonapi.errors.messages.Resolvable
 import de.ebf.spring.jsonapi.errors.resolvers.ExceptionResolver
 import de.ebf.spring.jsonapi.errors.resolvers.ResolvedException
-import org.springframework.context.i18n.LocaleContextHolder
-import org.springframework.context.support.StaticMessageSource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -124,7 +123,55 @@ class JsonApiErrorsBuilderTest extends Specification {
         }
     }
 
-    ErrorMessageSource createErrorMessageSource() {
+    def "should catch exceptions from the resolvers"() {
+        given:
+        def source = createErrorMessageSource()
+        def resolver = Mock(ExceptionResolver)
+        def factory = new JsonApiErrorsBuilderFactory()
+
+        def builder = factory
+                .withErrorMessageSource(source)
+                .withExceptionResolver(resolver)
+                .build()
+
+        when:
+        builder.build(new IllegalAccessException())
+
+        then:
+        1 * resolver.resolve(_ as Throwable) >> { throw new RuntimeException("Ooops") }
+
+        and:
+        def ex = thrown(JsonApiException)
+        ex.cause instanceof RuntimeException
+        ex.cause.message == "Ooops"
+    }
+
+    def "should catch exceptions from the message source"() {
+        given:
+        def source = Mock(ErrorMessageSource)
+        def resolver = Mock(ExceptionResolver)
+        def factory = new JsonApiErrorsBuilderFactory()
+
+        def builder = factory
+                .withErrorMessageSource(source)
+                .withExceptionResolver(resolver)
+                .build()
+
+        when:
+        builder.build(new IllegalAccessException())
+
+        then:
+        1 * resolver.resolve(_ as Throwable) >> new ResolvedException(HttpStatus.NOT_FOUND,
+                HttpHeaders.EMPTY, [new ErrorMessageResolvable("errors.test-error")])
+        1 * source.get(_ as Resolvable) >> { throw new RuntimeException("Ooops") }
+
+        and:
+        def ex = thrown(JsonApiException)
+        ex.cause instanceof RuntimeException
+        ex.cause.message == "Ooops"
+    }
+
+    static ErrorMessageSource createErrorMessageSource() {
         return { resolvable ->
             new JsonApiErrors.ErrorMessage("$resolvable.code-source", "title", "detail", [:])
         }
