@@ -20,6 +20,6 @@ interface JsonApiErrorsBuilder {
      * @throws de.ebf.spring.jsonapi.errors.exceptions.JsonApiException when an error occurs
      *      during the build process
      */
-    fun build(throwable: Throwable): ResponseEntity<JsonApiErrors>?
+    fun build(throwable: Throwable): ResponseEntity<JsonApiErrors>
 
 }

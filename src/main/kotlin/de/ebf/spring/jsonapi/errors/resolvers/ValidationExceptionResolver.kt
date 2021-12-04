@@ -3,7 +3,6 @@ package de.ebf.spring.jsonapi.errors.resolvers
 import de.ebf.spring.jsonapi.errors.messages.ErrorMessageResolvable
 import org.springframework.core.Ordered
 import org.springframework.http.HttpStatus
-import org.springframework.util.ClassUtils
 import org.springframework.util.StringUtils
 import org.springframework.validation.BindException
 import org.springframework.validation.BindingResult

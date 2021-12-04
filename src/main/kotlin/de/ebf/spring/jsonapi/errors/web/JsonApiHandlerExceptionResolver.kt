@@ -30,7 +30,7 @@ class JsonApiHandlerExceptionResolver(
 
     override fun resolveException(request: HttpServletRequest, response: HttpServletResponse, handler: Any?, ex: Exception): ModelAndView? {
         try {
-            val entity = builder.build(ex) ?: return null
+            val entity = builder.build(ex)
             writer.write(request, response, entity)
         } catch (e: IOException) {
             logger.warn("An error occurred while handling exception", e)

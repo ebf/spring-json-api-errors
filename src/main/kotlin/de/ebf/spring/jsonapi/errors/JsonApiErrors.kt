@@ -2,10 +2,10 @@ package de.ebf.spring.jsonapi.errors
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
-import java.io.Serializable
-
-import com.fasterxml.jackson.annotation.JsonInclude.Include.*
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
+import java.io.Serializable
 
 /**
  * Data model used to structure the error response according to the JSON API specification.
