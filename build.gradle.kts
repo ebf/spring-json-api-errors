@@ -99,7 +99,7 @@ tasks.jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = BigDecimal.valueOf(0.8) // at least 80% coverage is required
+                minimum = BigDecimal.valueOf(0.9) // at least 90% coverage is required
             }
         }
     }
