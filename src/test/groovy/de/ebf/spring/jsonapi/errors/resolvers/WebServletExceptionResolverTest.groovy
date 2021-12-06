@@ -18,14 +18,14 @@ import spock.lang.Unroll
 
 class WebServletExceptionResolverTest extends Specification {
 
-    @Unroll("#throwable = code: #code, status: #status")
-    def "should resolve exceptions for #throwable = code: #code, status: #status"() {
+    @Unroll("#ex = code: #code, status: #status")
+    def "should resolve exceptions for #ex = code: #code, status: #status"() {
         given:
         def resolver = new WebServletExceptionResolver()
         ResolvedException resolvedException
 
         when:
-        resolvedException = resolver.resolve(throwable)
+        resolvedException = resolver.resolve(ex)
 
         then:
         verifyAll {
@@ -35,7 +35,7 @@ class WebServletExceptionResolverTest extends Specification {
         }
 
         where:
-        throwable                                                             | code                             | status
+        ex                                                                   | code                             | status
         new HttpRequestMethodNotSupportedException("POST", ["GET"])                                      | "exception.method-not-supported"       | HttpStatus.METHOD_NOT_ALLOWED
         new HttpMediaTypeNotAcceptableException([MediaType.APPLICATION_JSON])                            | "exception.content-type-not-supported" | HttpStatus.NOT_ACCEPTABLE
         new HttpMediaTypeNotSupportedException(MediaType.APPLICATION_JSON, [MediaType.APPLICATION_JSON]) | "exception.content-type-not-supported" | HttpStatus.UNSUPPORTED_MEDIA_TYPE
@@ -51,6 +51,7 @@ class WebServletExceptionResolverTest extends Specification {
     def mockParameter() {
         def parameter = Mock(MethodParameter)
         parameter.getParameterType() >> String.class
+        parameter.getNestedParameterType() >> String.class
         return parameter
     }
 }

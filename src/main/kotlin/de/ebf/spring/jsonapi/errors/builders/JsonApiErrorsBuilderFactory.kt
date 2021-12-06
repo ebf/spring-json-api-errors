@@ -9,9 +9,7 @@ import org.springframework.core.OrderComparator
 import org.springframework.util.Assert
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
-import java.time.Duration
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * Factory class used to construct and configure the [JsonApiErrorsBuilder] which

@@ -1,7 +1,6 @@
 package de.ebf.spring.jsonapi.errors.exceptions
 
 import de.ebf.spring.jsonapi.errors.messages.Resolvable
-import java.lang.RuntimeException
 
 /**
  * Convenient exception class that can be used to construct error message responses using [Resolvable].

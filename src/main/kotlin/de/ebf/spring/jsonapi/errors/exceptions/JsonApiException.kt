@@ -1,7 +1,5 @@
 package de.ebf.spring.jsonapi.errors.exceptions
 
-import java.lang.RuntimeException
-
 /**
  * Exception thrown when something goes when constructing the [de.ebf.spring.jsonapi.errors.JsonApiErrors] object
  */

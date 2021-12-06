@@ -3,7 +3,6 @@ package de.ebf.spring.jsonapi.errors.integration
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.ebf.spring.jsonapi.errors.JsonApiErrors
 import de.ebf.spring.jsonapi.errors.builders.DefaultJsonApiErrorsBuilder
-import groovy.json.JsonOutput
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -132,7 +131,7 @@ class IntegrationTest extends Specification {
         verifyAll {
             result.hasBody()
             result.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
-            result.body == JsonOutput.toJson([errors: [
+            result.body == toJSON([errors: [
                     [code: "NotEmpty", detail: "must not be empty", source: [pointer: "username"]],
                     [code: "email.missing", detail: "Empty email address", source: [pointer: "inner/email"]]
              ]])
@@ -151,14 +150,14 @@ class IntegrationTest extends Specification {
         verifyAll {
             result.hasBody()
             result.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
-            result.body == JsonOutput.toJson([errors: [
+            result.body == toJSON([errors: [
                     [code: "email.missing", detail: "Empty email address", source: [pointer: "inner/email"]],
                     [code: "javax.validation.constraints.NotEmpty.message", detail: "must not be empty", source: [pointer: "username"]],
             ]])
         }
     }
 
-    def "exception should be writen by the error writer"() {
+    def "exception should be written by the error writer"() {
         when:
         def result = get("/writer")
 
@@ -197,5 +196,9 @@ class IntegrationTest extends Specification {
                     "\"detail\":\"Invalid request parameter value for parameter parameter\"," +
                     "\"source\":{\"parameter\":\"parameter\"}}]}"
         }
+    }
+
+    String toJSON(def value) {
+        mapper.writeValueAsString(value)
     }
 }

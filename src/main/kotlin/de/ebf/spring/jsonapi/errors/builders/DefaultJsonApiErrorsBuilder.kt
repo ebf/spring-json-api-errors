@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.util.Assert
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.lang.StringBuilder
 
 class DefaultJsonApiErrorsBuilder: JsonApiErrorsBuilder, InitializingBean {
 
@@ -34,7 +33,7 @@ class DefaultJsonApiErrorsBuilder: JsonApiErrorsBuilder, InitializingBean {
         Assert.notEmpty(exceptionResolvers, "There must be at least one exception resolver present")
     }
 
-    override fun build(throwable: Throwable): ResponseEntity<JsonApiErrors>? {
+    override fun build(throwable: Throwable): ResponseEntity<JsonApiErrors> {
         errorLogger.log(throwable)
 
         logger.debug("Building JSON API Errors for an exception", throwable)

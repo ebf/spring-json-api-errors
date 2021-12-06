@@ -24,7 +24,6 @@ import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.*
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.springframework.util.StringUtils
 import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.bind.ServletRequestBindingException
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException
@@ -81,19 +80,19 @@ class JsonApiErrorAutoConfiguration @Autowired constructor(
     class WebJsonApiErrorConfigurer: JsonApiErrorConfigurer {
 
         override fun configure(registry: ErrorMappingRegistry) {
-            registry.register(HttpMediaTypeNotAcceptableException::class.javaObjectType)
+            registry.register(HttpMediaTypeNotAcceptableException::class.java)
                 .code("exception.media_not_acceptable").status(HttpStatus.NOT_ACCEPTABLE)
             registry.register(ServletRequestBindingException::class.javaObjectType)
                 .code("exception.request_binding").status(HttpStatus.BAD_REQUEST)
-            registry.register(TypeMismatchException::class.javaObjectType)
+            registry.register(TypeMismatchException::class.java)
                 .code("exception.type_mismatch").status(HttpStatus.BAD_REQUEST)
-            registry.register(HttpMessageNotReadableException::class.javaObjectType)
+            registry.register(HttpMessageNotReadableException::class.java)
                 .code("exception.not_readable_message").status(HttpStatus.BAD_REQUEST)
-            registry.register(HttpMessageNotWritableException::class.javaObjectType)
+            registry.register(HttpMessageNotWritableException::class.java)
                 .code("exception.not_writable_message")
-            registry.register(ConversionNotSupportedException::class.javaObjectType)
+            registry.register(ConversionNotSupportedException::class.java)
                 .code("exception.unsupported_conversion")
-            registry.register(AsyncRequestTimeoutException::class.javaObjectType)
+            registry.register(AsyncRequestTimeoutException::class.java)
                 .code("exception.async_timeout").status(HttpStatus.SERVICE_UNAVAILABLE)
         }
 

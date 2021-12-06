@@ -6,9 +6,9 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.util.StringUtils
+import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.HttpMediaTypeNotSupportedException
 import org.springframework.web.HttpRequestMethodNotSupportedException
-import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.bind.MissingMatrixVariableException
 import org.springframework.web.bind.MissingRequestCookieException
 import org.springframework.web.bind.MissingRequestHeaderException

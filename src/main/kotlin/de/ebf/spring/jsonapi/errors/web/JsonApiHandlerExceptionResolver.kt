@@ -7,6 +7,7 @@ import org.springframework.core.Ordered
 import org.springframework.web.servlet.HandlerExceptionResolver
 import org.springframework.web.servlet.ModelAndView
 import java.io.IOException
+import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -29,11 +30,15 @@ class JsonApiHandlerExceptionResolver(
     }
 
     override fun resolveException(request: HttpServletRequest, response: HttpServletResponse, handler: Any?, ex: Exception): ModelAndView? {
+        val entity = builder.build(ex)
+
         try {
-            val entity = builder.build(ex) ?: return null
             writer.write(request, response, entity)
         } catch (e: IOException) {
-            logger.warn("An error occurred while handling exception", e)
+            logger.warn("Unexpected IO exception occurred while writing JSON API errors: {}", entity, e)
+            return null
+        } catch (e: ServletException) {
+            logger.warn("Unexpected servlet exception occurred while writing JSON API errors: {}", entity, e)
             return null
         }
         return ModelAndView()

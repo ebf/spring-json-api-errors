@@ -2,7 +2,6 @@ package de.ebf.spring.jsonapi.errors.messages
 
 import de.ebf.spring.jsonapi.errors.JsonApiErrors
 import org.springframework.context.NoSuchMessageException
-import org.springframework.core.Ordered
 
 /**
  * Interface used to find a translation for an exception code represented by [Resolvable] interface
