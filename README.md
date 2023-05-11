@@ -1,6 +1,10 @@
 # spring-json-api-errors
 Library that transforms exceptions to JSON API error objects for Spring Boot applications
 
+| :exclamation:  This library would no longer be maintained and would be superseeded by the [json-api](https://github.com/ebf/json-api) |
+|---------------------------------------------------------------------------------------------------------------------------------------|
+
+
 ## Installation
 
 ```gradle
